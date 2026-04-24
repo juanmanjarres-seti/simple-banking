@@ -1,0 +1,81 @@
+{
+  "artefacto": {
+    "nombre": "backend-service",
+    "tipo": "filesystem",
+    "ambiente": "staging",
+    "scanner": "trivy"
+  },
+  "resumen": {
+    "total": 2,
+    "critica": 0,
+    "alta": 0,
+    "media": 1,
+    "baja": 1
+  },
+  "vulnerabilidades": [
+    {
+      "id": "CVE-2024-9012",
+      "paquete": "requests",
+      "version_instalada": "2.28.0",
+      "version_corregida": "2.32.0",
+      "severidad": "MEDIA",
+      "titulo": "requests: Filtración de credenciales en redirecciones HTTP",
+      "score_cvss": 5.9,
+      "recomendacion": {
+        "accion": "Actualizar la librería requests a la versión 2.32.0 o superior.",
+        "pasos": [
+          "Ejecutar: pip install 'requests>=2.32.0'",
+          "Actualizar requirements.txt con la nueva versión fijada",
+          "Revisar el código que realiza redirecciones HTTP para validar que no se filtren cabeceras Authorization",
+          "Reconstruir la imagen o el entorno con las dependencias actualizadas",
+          "Ejecutar tests unitarios e integración para verificar que no hay regresiones"
+        ],
+        "esfuerzo": "BAJO",
+        "prioridad": 1,
+        "confianza_remediacion": 0.85
+      },
+      "files_involucrados": [
+        {
+          "ruta": "requirements.txt",
+          "analisis": "La dependencia requests==2.28.0 está fijada en esta versión vulnerable. Actualizar a requests>=2.32.0."
+        },
+        {
+          "ruta": "src/services/http_client.py",
+          "analisis": "La función get_resource envía la cabecera Authorization y sigue redirecciones (allow_redirects=True). Esto expone el token al servidor de destino tras una redirección. Actualizar requests resuelve la filtración; adicionalmente considerar deshabilitar allow_redirects o validar el dominio de destino."
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-3456",
+      "paquete": "pillow",
+      "version_instalada": "9.5.0",
+      "version_corregida": null,
+      "severidad": "BAJA",
+      "titulo": "Pillow: Lectura fuera de límites en archivos TIFF",
+      "score_cvss": 3.1,
+      "recomendacion": {
+        "accion": "No existe versión corregida disponible. Aplicar mitigación hasta que se publique un parche.",
+        "pasos": [
+          "Validar si el servicio procesa archivos TIFF provenientes de fuentes externas no confiables",
+          "Si es así, agregar validación del tipo MIME y tamaño del archivo antes de procesarlo con Pillow",
+          "Monitorear el advisory de Pillow en https://github.com/python-pillow/Pillow/security/advisories",
+          "Actualizar a la versión parcheada en cuanto esté disponible"
+        ],
+        "esfuerzo": "MEDIO",
+        "prioridad": 2,
+        "confianza_remediacion": 0.4
+      },
+      "files_involucrados": [
+        {
+          "ruta": "src/utils/image_processor.py",
+          "analisis": "La función process_upload abre directamente archivos sin validar el tipo ni el origen. Si se procesan archivos TIFF de usuarios externos, esta función es el punto de exposición al CVE de lectura fuera de límites."
+        },
+        {
+          "ruta": "requirements.txt",
+          "analisis": "pillow==9.5.0 está fijado en la versión vulnerable. Actualizar en cuanto el parche esté disponible."
+        }
+      ]
+    }
+  ],
+  "generado_en": "2026-04-21T10:30:00Z"
+}
